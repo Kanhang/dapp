@@ -17,7 +17,20 @@
         uint256 _value
       );
 
+    //indexed tells the following input to be logged
+    event Approve(
+      address indexed _owner,
+      address indexed _spender,
+      uint256 _value
+      );
+
+    event Allowance(
+      address indexed _owner,
+      address indexed _spender
+      );
     mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256 )) public allowance;
+
 
     constructor (uint256 _initialSupply) public {
       //msg.sender is the address call this function
@@ -26,6 +39,7 @@
         //allocate the initial totalSupply
 
     }
+
 
     //transfer
     //exception if account does not have enough
@@ -40,4 +54,28 @@
       emit Transfer(msg.sender, _to,_value);
       return true;
     }
+    function approve(address _spender, uint256 _value) public returns (bool success){
+        //allowance
+        //approve event
+      allowance[msg.sender][_spender]=_value;　//from account approves spender with an allowance amount
+      emit Approve(msg.sender, _spender, _value);
+      return true;
+    }
+    //this function is always called by spender , spender acts like a third party because it needs controls allowance
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success){
+      require(_value <= balanceOf[_from]);
+      //require _from has enough token
+      require(_value<=allowance[_from][msg.sender]);
+      //require allowance is enough
+      balanceOf[_from] -= _value;
+      balanceOf[_to] += _value;
+      allowance[_from][msg.sender] -= _value; // spender calls this function to minus the allowance amount
+      emit Transfer(_from, _to, _value);
+      return true;
+      //change the balance
+      //update allowance
+      //transfer evnet
+      //return a boolean
+    }
+
 }
